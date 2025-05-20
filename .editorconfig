@@ -1,0 +1,2 @@
+[*.{js,ts,cjs,vue,json,css}]
+tab_width = 2
