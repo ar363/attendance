@@ -19,6 +19,25 @@ function addJSONFile() {
 
   reader.readAsText(file)
 }
+
+async function loadCamera() {
+  let constraints = { video: true, audio: false }
+  if (process.client) {
+    const preferredId = localStorage.getItem('preferredCameraId')
+    if (preferredId) {
+      constraints = { video: { deviceId: { exact: preferredId } }, audio: false }
+    }
+  }
+  const ms = await navigator.mediaDevices.getUserMedia(constraints)
+  // @ts-ignore
+  ms.onactive = () => {
+    streamLoaded.value = true
+  }
+  if (videoObj.value) {
+    videoObj.value.srcObject = ms
+    streamLoaded.value = true // Ensure streamLoaded is set
+  }
+}
 </script>
 
 <template>

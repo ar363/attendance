@@ -6,6 +6,7 @@ const modelsLoaded = ref(false)
 const streamLoaded = ref(false)
 const addingFace = ref<Face | null>(null)
 const name = ref("")
+const usn = ref("")
 const fdt = ref<NodeJS.Timeout | null>(null)
 const endSignal = ref(false)
 const hideLoader = ref(false)
@@ -33,9 +34,14 @@ async function loadModels() {
 }
 
 async function loadCamera() {
-  const ms = await navigator.mediaDevices.getUserMedia({
-    video: true, audio: false,
-  })
+  let constraints = { video: true, audio: false }
+  if (process.client) {
+    const preferredId = localStorage.getItem('preferredCameraId')
+    if (preferredId) {
+      constraints = { video: { deviceId: { exact: preferredId } }, audio: false }
+    }
+  }
+  const ms = await navigator.mediaDevices.getUserMedia(constraints)
 
   // @ts-ignore
   ms.onactive = () => {
@@ -46,9 +52,10 @@ async function loadCamera() {
     videoObj.value.srcObject = ms
 }
 
+// Use recognize-style model options
 const opts = new FaceAPI.TinyFaceDetectorOptions({
-  inputSize: 224,
-  scoreThreshold: 0.5,
+  inputSize: 320,
+  scoreThreshold: 0.4,
 })
 
 async function faceDetection() {
@@ -91,12 +98,13 @@ function addNewFace(face: Face) {
 }
 
 function saveState() {
-  if (name.value) {
+  if (name.value && usn.value) {
     let exfaces = localStorage.getItem("faces")
     exfaces = JSON.parse(exfaces || "[]")
 
     exfaces.push({
       name: name.value,
+      usn: usn.value,
       desc: addingFace.value?.desc.join(","),
     })
 
@@ -112,17 +120,11 @@ function saveState() {
   <div class="bg-emerald-50 min-h-screen">
     <div class="p-4 mx-auto max-w-screen-xl">
       <h1 class="text-2xl font-bold mb-4">Add new face</h1>
-
-      <div class="mt-4 p-6 rounded-md bg-amber-100 text-amber-800" v-if="!modelsLoaded">Loading models, please wait...
-      </div>
-
-      <div class="mt-4 p-6 rounded-md bg-purple-100 text-purple-800" v-if="!modelsLoaded">Setting up video, please
-        wait...
-      </div>
-
+      <div class="mt-4 p-6 rounded-md bg-amber-100 text-amber-800" v-if="!modelsLoaded">Loading models, please wait...</div>
+      <div class="mt-4 p-6 rounded-md bg-purple-100 text-purple-800" v-if="!modelsLoaded">Setting up video, please wait...</div>
       <div class="flex items-stretch mt-4 mb-3" v-if="addingFace">
-        <input type="text" v-model="name" aria-label="Your name" placeholder="Your name" id="name"
-          class="border border-gray-300 px-3 rounded-l-md" required>
+        <input type="text" v-model="name" aria-label="Your name" placeholder="Your name" id="name" class="border border-gray-300 px-3 rounded-l-md" required>
+        <input type="text" v-model="usn" aria-label="USN" placeholder="USN" id="usn" class="border border-gray-300 px-3" required>
         <button class="px-4 py-2 bg-emerald-700 text-white rounded-r-md" @click="saveState">Save</button>
       </div>
 
