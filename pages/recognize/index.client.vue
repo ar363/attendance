@@ -53,7 +53,7 @@ async function loadCamera() {
 
 // Set options for small/far faces directly in constructor
 const opts = new FaceAPI.TinyFaceDetectorOptions({
-  inputSize: 320, // higher for smaller faces
+  inputSize: 608, // higher for smaller faces
   scoreThreshold: 0.4 // lower for more sensitivity
 })
 
