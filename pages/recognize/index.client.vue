@@ -22,8 +22,8 @@ const videoObj = useTemplateRef("videoObj")
 
 async function loadModels() {
   await Promise.all([
-    FaceAPI.loadTinyFaceDetectorModel('/models'),
-    FaceAPI.loadFaceLandmarkTinyModel('/models'),
+    FaceAPI.loadSsdMobilenetv1Model('/models')('/models'),
+    FaceAPI.loadFaceLandmarkModel('/models'),
     FaceAPI.loadFaceRecognitionModel('/models')
   ])
 
@@ -52,8 +52,7 @@ async function loadCamera() {
 }
 
 // Set options for small/far faces directly in constructor
-const opts = new FaceAPI.TinyFaceDetectorOptions({
-  inputSize: 608, // higher for smaller faces
+const opts = new FaceAPI.SsdMobilenetv1Options({
   scoreThreshold: 0.4 // lower for more sensitivity
 })
 
