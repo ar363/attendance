@@ -22,7 +22,7 @@ const videoObj = useTemplateRef("videoObj")
 
 async function loadModels() {
   await Promise.all([
-    FaceAPI.loadSsdMobilenetv1Model('/models')('/models'),
+    FaceAPI.loadSsdMobilenetv1Model('/models'),
     FaceAPI.loadFaceLandmarkModel('/models'),
     FaceAPI.loadFaceRecognitionModel('/models')
   ])
