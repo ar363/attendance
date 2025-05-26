@@ -25,8 +25,8 @@ const videoObj = useTemplateRef("videoObj")
 
 async function loadModels() {
   await Promise.all([
-    FaceAPI.loadTinyFaceDetectorModel('/models'),
-    FaceAPI.loadFaceLandmarkTinyModel('/models'),
+    FaceAPI.loadSsdMobilenetv1Model('/models'),
+    FaceAPI.loadFaceLandmarkModel('/models'),
     FaceAPI.loadFaceRecognitionModel('/models')
   ])
 
@@ -52,17 +52,16 @@ async function loadCamera() {
     videoObj.value.srcObject = ms
 }
 
-// Use recognize-style model options
-const opts = new FaceAPI.TinyFaceDetectorOptions({
-  inputSize: 320,
-  scoreThreshold: 0.4,
+// Use the same options as recognize page (non-tiny model)
+const opts = new FaceAPI.SsdMobilenetv1Options({
+  scoreThreshold: 0.4, // lower for more sensitivity
 })
 
 async function faceDetection() {
 
   if (videoObj.value && modelsLoaded.value) {
     hideLoader.value = true
-    const faces = await FaceAPI.detectAllFaces(videoObj.value, opts).withFaceLandmarks(true).withFaceDescriptors()
+    const faces = await FaceAPI.detectAllFaces(videoObj.value, opts).withFaceLandmarks(false).withFaceDescriptors()
 
     recfaces.value = faces.map((face) => {
       return {

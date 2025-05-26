@@ -105,7 +105,6 @@ function resetAttendance() {
 }
 
 async function faceDetection(ts?: number) {
-  if (!recording.value) return
   if (ts && lastFrameTime && ts - lastFrameTime < 100) { // drop frames if <10fps
     requestAnimationFrame(faceDetection)
     return
@@ -113,7 +112,7 @@ async function faceDetection(ts?: number) {
   lastFrameTime = ts || 0
 
   if (videoObj.value && modelsLoaded.value) {
-    const faces = await FaceAPI.detectAllFaces(videoObj.value, opts).withFaceLandmarks(true).withFaceDescriptors()
+    const faces = await FaceAPI.detectAllFaces(videoObj.value, opts).withFaceLandmarks(false).withFaceDescriptors()
     if (savedfaces.length == 0) {
       recfaces.value = faces.map((face) => ({
         x: 100 * face.detection.box.x / face.detection.imageWidth,
@@ -126,8 +125,8 @@ async function faceDetection(ts?: number) {
       const matcher = new FaceAPI.FaceMatcher(savedfaces.map((face) => new FaceAPI.LabeledFaceDescriptors(face.name, [face.desc])))
       recfaces.value = faces.map((face) => {
         const match = matcher.findBestMatch(face.descriptor)
-        // Attendance logic
-        if (match.label !== 'unknown' && match.label !== 'No faces in DB') {
+        // Attendance logic - only run when recording
+        if (recording.value && match.label !== 'unknown' && match.label !== 'No faces in DB') {
           if (!attendance[match.label]) attendance[match.label] = { seen: 0, lastSeen: 0, present: false }
           const now = Date.now()
           if (attendance[match.label].lastSeen && now - attendance[match.label].lastSeen < 2000) {
@@ -156,7 +155,7 @@ async function faceDetection(ts?: number) {
       })
     }
   }
-  if (!endSignal.value && recording.value)
+  if (!endSignal.value)
     requestAnimationFrame(faceDetection)
 }
 
@@ -227,7 +226,11 @@ function stopAttendance() {
 
 // Hide loader when both models and camera are ready
 watch([modelsLoaded, streamLoaded], ([models, stream]) => {
-  if (models && stream) hideLoader.value = true
+  if (models && stream) {
+    hideLoader.value = true
+    // Start face detection immediately when ready
+    faceDetection()
+  }
 })
 
 loadModels()
@@ -289,9 +292,9 @@ onBeforeUnmount(() => {
       <div class="relative inline-block">
         <video ref="videoObj" autoplay playsinline @loadedmetadata="faceDetection"></video>
         <div v-for="rf of recfaces"
-          :style="{ top: rf.y + '%', left: rf.x + '%', width: rf.w + '%', height: rf.h + '%', position: 'absolute', border: '2px solid white' }"
+          :style="{ top: rf.y + '%', left: rf.x + '%', width: rf.w + '%', height: rf.h + '%', position: 'absolute', border: recording ? '2px solid white' : '2px solid #3B82F6' }"
           class="flex items-end justify-end rounded-t-md rounded-bl-md">
-          <button class="bg-indigo-700 text-white -mb-8 -mr-[2px] px-4 py-1 rounded-b-md">{{ rf.match.label }} ({{
+          <button :class="recording ? 'bg-indigo-700' : 'bg-blue-600'" class="text-white -mb-8 -mr-[2px] px-4 py-1 rounded-b-md">{{ rf.match.label }} ({{
             Math.round(100 * (1 - rf.match.distance)) }}%)</button>
         </div>
       </div>
