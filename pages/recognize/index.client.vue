@@ -53,7 +53,7 @@ async function loadCamera() {
 
 // Set options for small/far faces directly in constructor
 const opts = new FaceAPI.SsdMobilenetv1Options({
-  scoreThreshold: 0.4 // lower for more sensitivity
+  scoreThreshold: 0.2 // lower for more sensitivity
 })
 
 function parseStrF32(s: string) {
