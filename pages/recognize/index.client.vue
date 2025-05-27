@@ -91,10 +91,10 @@ function getFaceCrop(faceBox, video) {
 const attendance: Record<string, { seen: number, lastSeen: number, present: boolean }> = {}
 const presentList = ref<string[]>([])
 const recording = ref(false)
-const thresholdSeconds = 0.5 // seconds to mark present
+const thresholdSeconds = 0.2 // seconds to mark present
 const countdown = ref(0)
 const attendanceDuration = 5 // seconds
-const minVisibleTime = 0.5 // seconds
+const minVisibleTime = 0.2 // seconds
 let lastFrameTime = 0
 let countdownTimer: any = null
 
@@ -294,8 +294,7 @@ onBeforeUnmount(() => {
         <div v-for="rf of recfaces"
           :style="{ top: rf.y + '%', left: rf.x + '%', width: rf.w + '%', height: rf.h + '%', position: 'absolute', border: recording ? '2px solid white' : '2px solid #3B82F6' }"
           class="flex items-end justify-end rounded-t-md rounded-bl-md">
-          <button :class="recording ? 'bg-indigo-700' : 'bg-blue-600'" class="text-white -mb-8 -mr-[2px] px-4 py-1 rounded-b-md">{{ rf.match.label }} ({{
-            Math.round(100 * (1 - rf.match.distance)) }}%)</button>
+          <button :class="recording ? 'bg-indigo-700' : 'bg-blue-600'" class="text-white -mb-8 -mr-[2px] px-4 py-1 rounded-b-md">{{ rf.match.label }}</button>
         </div>
       </div>
     </div>
